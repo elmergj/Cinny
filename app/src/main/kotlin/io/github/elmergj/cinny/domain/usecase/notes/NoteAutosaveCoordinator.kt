@@ -37,13 +37,20 @@ class NoteAutosaveCoordinator @Inject constructor(
         val AUTOSAVE_DELAY = 600.milliseconds
     }
 
-    fun setNote(note: Note) {
-        debounceJob?.cancel()
+    suspend fun setNote(note: Note) {
+        mutex.withLock {
+            check(currentNote == null) {
+                "Close the current note before opening another"
+            }
 
-        currentNote = note
-        pendingTitle = note.title
-        pendingContent = note.content
-        _saveError.value = false
+            debounceJob?.cancel()
+            debounceJob = null
+
+            currentNote = note
+            pendingTitle = note.title
+            pendingContent = note.content
+            _saveError.value = false
+        }
     }
 
     fun onEdited(
@@ -123,13 +130,25 @@ class NoteAutosaveCoordinator @Inject constructor(
         }
     }
 
-    fun clear() {
-        debounceJob?.cancel()
-        debounceJob = null
+    suspend fun clear() {
+        mutex.withLock {
+            val note = currentNote
 
-        currentNote = null
-        pendingTitle = ""
-        pendingContent = ""
-        _saveError.value = false
+            check(
+                note == null ||
+                        (note.title == pendingTitle &&
+                                note.content == pendingContent)
+            ) {
+                "Cannot clear a note with unsaved changes"
+            }
+
+            debounceJob?.cancel()
+            debounceJob = null
+
+            currentNote = null
+            pendingTitle = ""
+            pendingContent = ""
+            _saveError.value = false
+        }
     }
 }

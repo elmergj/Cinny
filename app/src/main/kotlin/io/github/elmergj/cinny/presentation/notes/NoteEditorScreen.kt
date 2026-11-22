@@ -31,7 +31,6 @@ fun NoteEditorScreen(
     val title by viewModel.title.collectAsStateWithLifecycle()
     val content by viewModel.content.collectAsStateWithLifecycle()
     val isCreating by viewModel.isCreating.collectAsStateWithLifecycle()
-    val isSaving by viewModel.isSaving.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     var noteIdInput by rememberSaveable {
         mutableStateOf("")
@@ -97,14 +96,6 @@ fun NoteEditorScreen(
                     .fillMaxWidth()
                     .weight(1f)
             )
-
-            // TODO: Replace manual saving with autosave after validation.
-            Button(
-                onClick = viewModel::saveNote,
-                enabled = !isSaving
-            ) {
-                Text(if (isSaving) "Saving..." else "Save")
-            }
 
             // Test: REMOVE BEFORE GOING PROD.
             Button(
