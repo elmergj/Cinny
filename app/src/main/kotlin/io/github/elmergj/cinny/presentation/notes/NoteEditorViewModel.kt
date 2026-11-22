@@ -116,15 +116,6 @@ class NoteEditorViewModel @Inject constructor(
         )
     }
 
-    // TODO: Remove manual saving after autosave validation.
-    fun saveNote() {
-        if (_noteId.value == null || isClosing) return
-
-        viewModelScope.launch {
-            autosaveCoordinator.flush()
-        }
-    }
-
     fun openNote(id: Long) {
         if (
             id <= 0L ||
