@@ -1,8 +1,9 @@
 package io.github.elmergj.cinny.data.local.dao
 
 import androidx.room3.Dao
+import androidx.room3.Insert
 import androidx.room3.Query
-import androidx.room3.Upsert
+import androidx.room3.Update
 import io.github.elmergj.cinny.data.local.database.entity.ReminderEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -22,8 +23,11 @@ interface ReminderDao {
     """)
     fun search(query: String): Flow<List<ReminderEntity>>
 
-    @Upsert
-    suspend fun save(reminder: ReminderEntity)
+    @Insert
+    suspend fun insert(reminder: ReminderEntity): Long
+
+    @Update
+    suspend fun update(reminder: ReminderEntity)
 
     @Query("DELETE FROM reminders WHERE id = :id")
     suspend fun deleteById(id: Long)

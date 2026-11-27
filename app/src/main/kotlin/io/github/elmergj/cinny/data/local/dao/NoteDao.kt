@@ -4,7 +4,6 @@ import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.Query
 import androidx.room3.Update
-import androidx.room3.Upsert
 import io.github.elmergj.cinny.data.local.database.entity.NoteEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -33,4 +32,25 @@ interface NoteDao {
 
     @Query("DELETE FROM notes WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("""
+    SELECT * FROM notes
+    WHERE folderId IS :folderId
+    ORDER BY isPinned DESC, updatedAt DESC
+    """)
+    fun getByFolderId(folderId: Long?): Flow<List<NoteEntity>>
+
+    @Query("""
+    SELECT notes.* FROM notes
+    INNER JOIN note_tags ON notes.id = note_tags.noteId
+    WHERE note_tags.tagId = :tagId
+    ORDER BY isPinned DESC, updatedAt DESC
+    """)
+    fun getByTagId(tagId: Long): Flow<List<NoteEntity>>
+
+    @Query("UPDATE notes SET isPinned = :isPinned WHERE id = :id")
+    suspend fun setPinned(id: Long, isPinned: Boolean)
+
+    @Query("UPDATE notes SET folderId = :folderId WHERE id = :id")
+    suspend fun moveToFolder(id: Long, folderId: Long?)
 }

@@ -34,8 +34,33 @@ class NoteRepositoryImpl @Inject constructor(
         noteDao.update(note.toEntity())
     }
 
-
     override suspend fun deleteNote(id: Long) {
         noteDao.deleteById(id)
+    }
+
+    override fun getNotesByFolderId(folderId: Long?): Flow<List<Note>> {
+        return noteDao.getByFolderId(folderId).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override fun getNotesByTagId(tagId: Long): Flow<List<Note>> {
+        return noteDao.getByTagId(tagId).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override fun searchNotes(query: String): Flow<List<Note>> {
+        return noteDao.search(query).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override suspend fun setNotePinned(id: Long, isPinned: Boolean) {
+        noteDao.setPinned(id, isPinned)
+    }
+
+    override suspend fun moveNote(id: Long, folderId: Long?) {
+        noteDao.moveToFolder(id, folderId)
     }
 }

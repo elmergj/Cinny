@@ -10,4 +10,18 @@ data class Note(
     val updatedAt: Instant,
     val folderId: Long?,
     val isPinned: Boolean
-)
+){
+    init {
+        require(id >= 0L) {
+            "Note ID cannot be negative"
+        }
+
+        require(folderId == null || folderId > 0L) {
+            "Folder ID must be positive"
+        }
+
+        require(!updatedAt.isBefore(createdAt)) {
+            "Updated date cannot precede creation date"
+        }
+    }
+}
