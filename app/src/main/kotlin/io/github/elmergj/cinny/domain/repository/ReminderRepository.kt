@@ -11,4 +11,5 @@ interface ReminderRepository {
     suspend fun createReminder(reminder: Reminder): Long
     suspend fun updateReminder(reminder: Reminder)
     suspend fun deleteReminder(id: Long)
+    fun searchReminders(query: String): Flow<List<Reminder>>
 }

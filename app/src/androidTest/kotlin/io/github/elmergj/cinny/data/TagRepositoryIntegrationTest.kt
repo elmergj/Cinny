@@ -9,8 +9,11 @@ import io.github.elmergj.cinny.data.repository.NoteRepositoryImpl
 import io.github.elmergj.cinny.data.repository.TagRepositoryImpl
 import io.github.elmergj.cinny.domain.model.Note
 import io.github.elmergj.cinny.domain.model.Tag
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -20,6 +23,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.Instant
+import kotlin.time.Duration.Companion.milliseconds
 
 @RunWith(AndroidJUnit4::class)
 class TagRepositoryIntegrationTest {
@@ -264,5 +268,87 @@ class TagRepositoryIntegrationTest {
         assertTrue(result.isFailure)
         assertEquals(original, repository.getTagById(tagId))
         assertEquals(2, repository.getAllTags().first().size)
+    }
+
+    @Test
+    fun `should retrieve tags associated with a note ordered by name`() = runBlocking {
+        val noteId = createNote()
+
+        val work = createTag("Work")
+        val personal = createTag("Personal")
+        val ideas = createTag("Ideas")
+
+        repository.addTagToNote(noteId, work)
+        repository.addTagToNote(noteId, personal)
+        repository.addTagToNote(noteId, ideas)
+
+        val result = repository.getTagsForNote(noteId).first()
+
+        assertEquals(
+            listOf("Ideas", "Personal", "Work"),
+            result.map { it.name }
+        )
+    }
+
+    @Test
+    fun `should observe changes to tags associated with a note`() = runBlocking {
+        val noteId = createNote()
+        val tagId = createTag("Work")
+
+        val emissions = Channel<List<Long>>(Channel.UNLIMITED)
+
+        val job = launch {
+            repository.getTagsForNote(noteId).collect { tags ->
+                emissions.send(tags.map { it.id })
+            }
+        }
+
+        try {
+            withTimeout(5000.milliseconds) {
+                assertTrue(emissions.receive().isEmpty())
+
+                repository.addTagToNote(noteId, tagId)
+
+                assertEquals(listOf(tagId), emissions.receive())
+
+                repository.removeTagFromNote(noteId, tagId)
+
+                assertTrue(emissions.receive().isEmpty())
+            }
+        } finally {
+            job.cancel()
+            emissions.cancel()
+        }
+    }
+
+    @Test
+    fun `should observe changes to notes associated with a tag`() = runBlocking {
+        val noteId = createNote()
+        val tagId = createTag("Work")
+
+        val emissions = Channel<List<Long>>(Channel.UNLIMITED)
+
+        val job = launch {
+            noteRepository.getNotesByTagId(tagId).collect { notes ->
+                emissions.send(notes.map { it.id })
+            }
+        }
+
+        try {
+            withTimeout(5000.milliseconds) {
+                assertTrue(emissions.receive().isEmpty())
+
+                repository.addTagToNote(noteId, tagId)
+
+                assertEquals(listOf(noteId), emissions.receive())
+
+                repository.removeTagFromNote(noteId, tagId)
+
+                assertTrue(emissions.receive().isEmpty())
+            }
+        } finally {
+            job.cancel()
+            emissions.cancel()
+        }
     }
 }

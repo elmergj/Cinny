@@ -415,4 +415,114 @@ class NoteRepositoryIntegrationTest {
 
         assertNull(reminder.linkedNoteId)
     }
+
+    @Test
+    fun `should order notes by priority when filtering by folder`() = runBlocking {
+        val folderId = createFolder("Work")
+        val now = Instant.now()
+
+        val unpinned = createNote(
+            folderId = folderId,
+            updatedAt = now
+        )
+
+        val pinnedOld = createNote(
+            folderId = folderId,
+            isPinned = true,
+            updatedAt = now.minusSeconds(120)
+        )
+
+        val pinnedRecent = createNote(
+            folderId = folderId,
+            isPinned = true,
+            updatedAt = now.minusSeconds(60)
+        )
+
+        val result = repository.getNotesByFolderId(folderId).first()
+
+        assertEquals(
+            listOf(pinnedRecent, pinnedOld, unpinned),
+            result.map { it.id }
+        )
+    }
+
+    @Test
+    fun `should order notes by priority when filtering by tag`() = runBlocking {
+        val tagId = createTag("Work")
+        val now = Instant.now()
+
+        val unpinned = createNote(
+            updatedAt = now
+        )
+
+        val pinnedOld = createNote(
+            isPinned = true,
+            updatedAt = now.minusSeconds(120)
+        )
+
+        val pinnedRecent = createNote(
+            isPinned = true,
+            updatedAt = now.minusSeconds(60)
+        )
+
+        val tagDao = database.tagDao()
+
+        listOf(unpinned, pinnedOld, pinnedRecent).forEach { noteId ->
+            tagDao.addTagToNote(
+                NoteTagCrossRef(noteId, tagId)
+            )
+        }
+
+        val result = repository.getNotesByTagId(tagId).first()
+
+        assertEquals(
+            listOf(pinnedRecent, pinnedOld, unpinned),
+            result.map { it.id }
+        )
+    }
+
+    @Test
+    fun `should order search results by priority`() = runBlocking {
+        val now = Instant.now()
+
+        val unpinned = createNote(
+            title = "Kotlin",
+            updatedAt = now
+        )
+
+        val pinnedOld = createNote(
+            title = "Kotlin",
+            isPinned = true,
+            updatedAt = now.minusSeconds(120)
+        )
+
+        val pinnedRecent = createNote(
+            title = "Kotlin",
+            isPinned = true,
+            updatedAt = now.minusSeconds(60)
+        )
+
+        val result = repository.searchNotes("Kotlin").first()
+
+        assertEquals(
+            listOf(pinnedRecent, pinnedOld, unpinned),
+            result.map { it.id }
+        )
+    }
+
+    @Test
+    fun `should order notes by descending ID when update dates are equal`() = runBlocking {
+        val now = Instant.now()
+
+        val noteA = createNote(updatedAt = now)
+        val noteB = createNote(updatedAt = now)
+        val noteC = createNote(updatedAt = now)
+
+        val result = repository.getAllNotes().first()
+
+        assertEquals(
+            listOf(noteC, noteB, noteA),
+            result.map { it.id }
+        )
+    }
 }

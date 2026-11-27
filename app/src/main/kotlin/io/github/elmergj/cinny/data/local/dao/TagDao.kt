@@ -39,6 +39,7 @@ interface TagDao {
     SELECT tags.* FROM tags
     INNER JOIN note_tags ON tags.id = note_tags.tagId
     WHERE note_tags.noteId = :noteId
-""")
+    ORDER BY tags.name ASC
+    """)
     fun getTagsForNote(noteId: Long): Flow<List<TagEntity>>
 }

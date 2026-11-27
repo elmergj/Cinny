@@ -302,4 +302,18 @@ class FolderRepositoryIntegrationTest {
 
         assertEquals(original, result)
     }
+
+    @Test
+    fun `should retrieve all folders ordered by name`() = runBlocking {
+        createFolder("Work")
+        createFolder("Personal")
+        createFolder("Ideas")
+
+        val result = repository.getAllFolders().first()
+
+        assertEquals(
+            listOf("Ideas", "Personal", "Work"),
+            result.map { it.name }
+        )
+    }
 }

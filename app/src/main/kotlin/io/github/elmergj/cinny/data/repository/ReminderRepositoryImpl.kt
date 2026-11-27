@@ -40,4 +40,10 @@ class ReminderRepositoryImpl @Inject constructor(
     override suspend fun deleteReminder(id: Long) {
         reminderDao.deleteById(id)
     }
+
+    override fun searchReminders(query: String): Flow<List<Reminder>> {
+        return reminderDao.search(query).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
 }
