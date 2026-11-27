@@ -23,8 +23,18 @@ class ReminderRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveReminder(reminder: Reminder) {
-        reminderDao.save(reminder.toEntity())
+    override suspend fun createReminder(reminder: Reminder): Long {
+        return reminderDao.insert(
+            reminder.copy(id = 0L).toEntity()
+        )
+    }
+
+    override suspend fun updateReminder(reminder: Reminder) {
+        require(reminder.id > 0L) {
+            "Cannot update a reminder without a valid ID"
+        }
+
+        reminderDao.update(reminder.toEntity())
     }
 
     override suspend fun deleteReminder(id: Long) {

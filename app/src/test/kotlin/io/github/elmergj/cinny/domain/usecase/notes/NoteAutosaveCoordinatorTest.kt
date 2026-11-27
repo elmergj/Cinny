@@ -85,7 +85,26 @@ class NoteAutosaveCoordinatorTest {
         }
 
         override suspend fun deleteNote(id: Long) {
-            // Not required for this test.
+            error("Not used by autosave")
+        }
+        override fun getNotesByFolderId(folderId: Long?): Flow<List<Note>> {
+            error("Not used by autosave")
+        }
+
+        override fun getNotesByTagId(tagId: Long): Flow<List<Note>> {
+            error("Not used by autosave")
+        }
+
+        override fun searchNotes(query: String): Flow<List<Note>> {
+            error("Not used by autosave")
+        }
+
+        override suspend fun setNotePinned(id: Long, isPinned: Boolean) {
+            error("Not used by autosave")
+        }
+
+        override suspend fun moveNote(id: Long, folderId: Long?) {
+            error("Not used by autosave")
         }
     }
 

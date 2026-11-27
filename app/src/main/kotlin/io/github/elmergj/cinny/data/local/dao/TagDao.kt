@@ -4,8 +4,6 @@ import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
-import androidx.room3.Upsert
-import io.github.elmergj.cinny.data.local.database.entity.NoteEntity
 import io.github.elmergj.cinny.data.local.database.entity.NoteTagCrossRef
 import io.github.elmergj.cinny.data.local.database.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
@@ -19,8 +17,11 @@ interface TagDao {
     @Query("SELECT * FROM tags ORDER BY name ASC")
     fun getAll(): Flow<List<TagEntity>>
 
-    @Upsert
-    suspend fun save(tag: TagEntity)
+    @Insert
+    suspend fun insert(tag: TagEntity): Long
+
+    @Query("UPDATE tags SET name = :name WHERE id = :id")
+    suspend fun renameTag(id: Long, name: String)
 
     @Query("DELETE FROM tags WHERE id = :id")
     suspend fun deleteById(id: Long)
@@ -33,9 +34,6 @@ interface TagDao {
         WHERE noteId = :noteId AND tagId = :tagId
     """)
     suspend fun removeTagFromNote(noteId: Long, tagId: Long)
-
-    @Query("SELECT * FROM notes WHERE folderId = :folderId ORDER BY isPinned DESC, updatedAt DESC")
-    fun getByFolderId(folderId: Long): Flow<List<NoteEntity>>
 
     @Query("""
     SELECT tags.* FROM tags

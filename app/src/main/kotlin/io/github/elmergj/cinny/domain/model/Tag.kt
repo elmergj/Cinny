@@ -6,4 +6,14 @@ data class Tag(
     val id: Long,
     val name: String,
     val createdAt: Instant,
-)
+){
+    init {
+        require(id >= 0L) {
+            "Tag ID cannot be negative"
+        }
+
+        require(name.isNotBlank()) {
+            "Tag name cannot be blank"
+        }
+    }
+}

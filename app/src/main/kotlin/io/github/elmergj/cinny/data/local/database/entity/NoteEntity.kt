@@ -13,7 +13,7 @@ import java.time.Instant
             entity = FolderEntity::class,
             parentColumns = ["id"],
             childColumns = ["folderId"],
-            onDelete = ForeignKey.SET_NULL
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [Index("folderId")]
