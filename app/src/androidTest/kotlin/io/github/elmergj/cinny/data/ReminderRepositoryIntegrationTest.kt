@@ -169,4 +169,73 @@ class ReminderRepositoryIntegrationTest {
             repository.getAllReminders().first().map { it.id }
         )
     }
+
+    @Test
+    fun `should retrieve reminders ordered by scheduled date`() = runBlocking {
+        val reminder = buildReminder()
+
+        val late = repository.createReminder(
+            reminder.copy(
+                scheduledAt = reminder.scheduledAt.plusSeconds(7200)
+            )
+        )
+
+        val early = repository.createReminder(
+            reminder
+        )
+
+        val middle = repository.createReminder(
+            reminder.copy(
+                scheduledAt = reminder.scheduledAt.plusSeconds(3600)
+            )
+        )
+
+        val result = repository.getAllReminders().first()
+
+        assertEquals(
+            listOf(early, middle, late),
+            result.map { it.id }
+        )
+    }
+
+    @Test
+    fun `should search reminders by title and order results by scheduled date`() = runBlocking {
+        val reminder = buildReminder()
+
+        val late = repository.createReminder(
+            reminder.copy(
+                title = "Work meeting",
+                scheduledAt = reminder.scheduledAt.plusSeconds(3600)
+            )
+        )
+
+        val early = repository.createReminder(
+            reminder.copy(
+                title = "Finish work report"
+            )
+        )
+
+        repository.createReminder(
+            reminder.copy(
+                title = "Personal",
+                description = "Work related description"
+            )
+        )
+
+        val result = repository.searchReminders("work").first()
+
+        assertEquals(
+            listOf(early, late),
+            result.map { it.id }
+        )
+    }
+
+    @Test
+    fun `should return an empty list when reminder search has no matches`() = runBlocking {
+        createReminder("Work meeting")
+
+        val result = repository.searchReminders("Shopping").first()
+
+        assertTrue(result.isEmpty())
+    }
 }

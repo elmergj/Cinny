@@ -13,7 +13,7 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE id = :id")
     suspend fun getById(id: Long): NoteEntity?
 
-    @Query("SELECT * FROM notes ORDER BY isPinned DESC, updatedAt DESC")
+    @Query("SELECT * FROM notes ORDER BY isPinned DESC, updatedAt DESC, id DESC")
     fun getAll(): Flow<List<NoteEntity>>
 
     @Query("""
