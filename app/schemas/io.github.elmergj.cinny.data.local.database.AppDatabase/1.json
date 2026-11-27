@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "882628c5d0073c667c124638c533b907",
+    "identityHash": "272054a583b32ba6f39ef6a81cad39e2",
     "entities": [
       {
         "tableName": "notes",
@@ -295,15 +295,6 @@
         },
         "indices": [
           {
-            "name": "index_note_tags_noteId",
-            "unique": false,
-            "columnNames": [
-              "noteId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_note_tags_noteId` ON `${TABLE_NAME}` (`noteId`)"
-          },
-          {
             "name": "index_note_tags_tagId",
             "unique": false,
             "columnNames": [
@@ -341,7 +332,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '882628c5d0073c667c124638c533b907')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '272054a583b32ba6f39ef6a81cad39e2')"
     ]
   }
 }

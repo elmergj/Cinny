@@ -22,7 +22,6 @@ import androidx.room3.Index
         )
     ],
     indices = [
-        Index("noteId"),
         Index("tagId")
     ]
 )
